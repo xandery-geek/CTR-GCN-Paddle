@@ -1,0 +1,71 @@
+work_dir: ./work_dir/fsd/
+
+# feeder
+feeder: feeders.feeder_fsd.Feeder
+train_feeder_args:
+  data_path: data/fsd/raw_data/train_data.npy
+  label_path: data/fsd/raw_data/train_label.npy
+  split: train # train or train_all
+  debug: False
+  random_choose: False
+  random_shift: False
+  random_move: False
+  window_size: 64
+  normalization: False
+  random_rot: True
+  p_interval: [0.5, 1]
+  vel: False
+  bone: False
+
+#train_val_args:
+#  data_path: data/fsd/raw_data/train_data.npy
+#  label_path: data/fsd/raw_data/train_label.npy
+#  split: val
+#  debug: False
+#  random_choose: False
+#  random_shift: False
+#  random_move: False
+#  window_size: 64
+#  normalization: False
+#  random_rot: True
+#  p_interval: [0.5, 1]
+#  vel: False
+#  bone: False
+
+test_feeder_args:
+  data_path: data/fsd/raw_data/test_A_data.npy
+  split: test
+  window_size: 64
+  p_interval: [0.95]
+  vel: False
+  bone: False
+  debug: False
+
+# processor
+phase: predict
+
+# model
+model: model.ctrgcn.Model
+weights: ./work_dir/fsd/runs-65-11830.pt
+model_args:
+  num_class: 30
+  num_point: 25
+  num_person: 1
+  graph: graph.fsd.Graph
+  graph_args:
+    labeling_mode: 'spatial'
+
+#optim
+weight_decay: 0.0004
+base_lr: 0.1
+lr_decay_rate: 0.1
+step: [35, 55]
+warm_up_epoch: 5
+
+# training
+cpu: False
+device: 1
+batch_size: 8
+test_batch_size: 4
+num_epoch: 65
+nesterov: True
