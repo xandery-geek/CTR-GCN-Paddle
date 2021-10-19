@@ -196,8 +196,8 @@ class Processor:
         for batch_idx, (data, label, index) in enumerate(process):
             self.global_step += 1
             # with paddle.no_grad():
-                # data = data.float()
-                # label = label.long()
+            # data = data.float()
+            # label = label.long()
 
             timer['dataloader'] += self.split_time()
 
@@ -399,7 +399,7 @@ class Processor:
 if __name__ == '__main__':
     parser = get_parser()
 
-    # load arg form config file
+    # load arg from config file
     p = parser.parse_args()
     if p.config is not None:
         with open(p.config, 'r') as f:

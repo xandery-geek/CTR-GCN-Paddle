@@ -262,7 +262,7 @@ class unit_gcn(nn.Layer):
                                              default_initializer=paddle.nn.initializer.Assign(paddle_A))
             self.A.stop_gradient = True
 
-        alpha = paddle.zeros(1)
+        alpha = paddle.zeros([1])
         self.alpha = paddle.create_parameter(shape=alpha.shape, dtype=str(alpha.numpy().dtype),
                                              default_initializer=paddle.nn.initializer.Assign(alpha))
         self.bn = nn.BatchNorm2D(out_channels)
@@ -344,7 +344,7 @@ class Model(nn.Layer):
         self.l9 = TCN_GCN_unit(base_channel*4, base_channel*4, A, adaptive=adaptive)
         self.l10 = TCN_GCN_unit(base_channel*4, base_channel*4, A, adaptive=adaptive)
 
-        self.fc = nn.Linear(base_channel*4, num_class, bias_attr=bool)
+        self.fc = nn.Linear(base_channel*4, num_class)
         init.Normal(0, math.sqrt(2. / num_class))(self.fc.weight)
         bn_init(self.data_bn, 1)
         if drop_out:
@@ -355,12 +355,12 @@ class Model(nn.Layer):
     def forward(self, x):
         if len(x.shape) == 3:
             N, T, VC = x.shape
-            x = x.reshape(N, T, self.num_point, -1).transpose([0, 3, 1, 2]).unsqueeze(-1)
-        N, C, T, V, M = x.size()
+            x = x.reshape([N, T, self.num_point, -1]).transpose([0, 3, 1, 2]).unsqueeze(-1)
+        N, C, T, V, M = x.shape
 
-        x = x.transpose([0, 4, 3, 1, 2]).reshape(N, M * V * C, T)
+        x = x.transpose([0, 4, 3, 1, 2]).reshape([N, M * V * C, T])
         x = self.data_bn(x)
-        x = x.reshape(N, M, V, C, T).transpose([0, 1, 3, 4, 2]).reshape(N * M, C, T, V)
+        x = x.reshape([N, M, V, C, T]).transpose([0, 1, 3, 4, 2]).reshape([N * M, C, T, V])
         x = self.l1(x)
         x = self.l2(x)
         x = self.l3(x)
@@ -374,7 +374,7 @@ class Model(nn.Layer):
 
         # N*M,C,T,V
         c_new = x.shape[1]
-        x = x.reshape(N, M, c_new, -1)  # N, M, C', T*V
+        x = x.reshape([N, M, c_new, -1])  # N, M, C', T*V
         x = x.mean(3).mean(1)  # N, C'
         x = self.drop_out(x)
 

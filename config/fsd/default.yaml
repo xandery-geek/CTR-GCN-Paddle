@@ -42,11 +42,11 @@ test_feeder_args:
   debug: False
 
 # processor
-phase: predict
+phase: train
 
 # model
 model: model.ctrgcn.Model
-weights: ./work_dir/fsd/runs-65-11830.pt
+#weights: ./work_dir/fsd/runs-65-11830.pt
 model_args:
   num_class: 30
   num_point: 25
@@ -64,7 +64,7 @@ warm_up_epoch: 5
 
 # training
 cpu: False
-device: 1
+device: [0, 1]
 batch_size: 8
 test_batch_size: 4
 num_epoch: 65

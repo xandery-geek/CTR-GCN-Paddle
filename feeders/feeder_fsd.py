@@ -54,7 +54,7 @@ class Feeder(Dataset):
         if self.label_path:
             npz_label = np.load(self.label_path)
         else:
-            npz_label = np.zeros(npz_data.shape[0], dtype=np.int)
+            npz_label = np.zeros(npz_data.shape[0], dtype=np.int32)
 
         if self.split == 'train':
             size = int(len(npz_data))
@@ -104,11 +104,3 @@ class Feeder(Dataset):
         rank = score.argsort()
         hit_top_k = [l in rank[i, -top_k:] for i, l in enumerate(self.label)]
         return sum(hit_top_k) * 1.0 / len(hit_top_k)
-
-
-def import_class(name):
-    components = name.split('.')
-    mod = __import__(components[0])
-    for comp in components[1:]:
-        mod = getattr(mod, comp)
-    return mod

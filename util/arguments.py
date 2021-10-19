@@ -1,5 +1,5 @@
 import argparse
-from util import DictAction
+from util.util import DictAction
 
 
 def str2bool(v):

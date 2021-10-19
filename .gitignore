@@ -4,6 +4,7 @@ data/fsd/raw_data/
 **/.DS_Store
 **/__pycache__/**
 work_dir/
+log/
 
 *.iml
 
