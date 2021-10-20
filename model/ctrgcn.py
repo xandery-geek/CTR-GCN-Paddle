@@ -359,6 +359,7 @@ class Model(nn.Layer):
         N, C, T, V, M = x.shape
 
         x = x.transpose([0, 4, 3, 1, 2]).reshape([N, M * V * C, T])
+        x.stop_gradient = False
         x = self.data_bn(x)
         x = x.reshape([N, M, V, C, T]).transpose([0, 1, 3, 4, 2]).reshape([N * M, C, T, V])
         x = self.l1(x)

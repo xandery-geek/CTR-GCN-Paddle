@@ -209,14 +209,15 @@ class Processor:
             loss.backward()
             self.optimizer.step()
 
-            loss_value.append(loss.data.item())
+            loss_value.append(loss.numpy())
             timer['model'] += self.split_time()
 
-            value, predict_label = paddle.max(output.data, 1)
-            acc = paddle.mean((predict_label == label.data).float())
-            acc_value.append(acc.data.item())
-            self.train_writer.add_scalar('acc', acc, self.global_step)
-            self.train_writer.add_scalar('loss', loss.data.item(), self.global_step)
+            predict_label = np.argmax(output.numpy(), axis=1)
+            # value, predict_label = paddle.max(output, 1)
+            acc = paddle.mean((paddle.to_tensor(predict_label) == label).astype('float32'))
+            acc_value.append(acc.numpy())
+            self.train_writer.add_scalar('acc', acc.numpy(), self.global_step)
+            self.train_writer.add_scalar('loss', loss.numpy(), self.global_step)
 
             # statistics
             self.lr = self.optimizer.get_lr()
@@ -263,16 +264,17 @@ class Processor:
 
                     output = self.model(data)
                     loss = self.loss(output, label)
-                    score_frag.append(output.data.cpu().numpy())
-                    loss_value.append(loss.data.item())
+                    score_frag.append(output.numpy())
+                    loss_value.append(loss.numpy())
 
-                    _, predict_label = paddle.max(output.data, 1)
-                    pred_list.append(predict_label.data.cpu().numpy())
+                    predict_label = np.argmax(output.numpy(), axis=1)
+                    # _, predict_label = paddle.max(output, 1)
+                    pred_list.append(predict_label)
                     step += 1
 
                 if wrong_file is not None or result_file is not None:
-                    predict = list(predict_label.cpu().numpy())
-                    true = list(label.data.cpu().numpy())
+                    predict = list(predict_label)
+                    true = list(label.numpy())
                     for i, x in enumerate(predict):
                         if result_file is not None:
                             f_r.write(str(x) + ',' + str(true[i]) + '\n')
@@ -327,8 +329,9 @@ class Processor:
                 with paddle.no_grad():
                     # data = data.float()
                     output = self.model(data)
-                    _, predict_label = paddle.max(output.data, 1)
-                    pred_list.append(predict_label.data.cpu().numpy())
+                    predict_label = np.argmax(output.numpy(), axis=1)
+                    # _, predict_label = paddle.max(output.data, 1)
+                    pred_list.append(predict_label)
 
             prediction = []
             for p in pred_list:
@@ -340,12 +343,14 @@ class Processor:
 
     def start(self):
         if self.arg.phase == 'train' or self.arg.phase == 'eval':
-            self.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
+            # self.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
             self.global_step = self.arg.start_epoch * len(self.data_loader['train']) / self.arg.batch_size
 
             # print the size of parameters
             def count_parameters(model):
-                return sum(p.numel() for p in model.parameters() if not p.stop_gradient)
+                size = sum(p.numel() for p in model.parameters() if not p.stop_gradient)
+                return size.numpy()[0]
+
             self.print_log(f'# Parameters Size: {count_parameters(self.model)}')
 
             for epoch in range(self.arg.start_epoch, self.arg.num_epoch):
@@ -403,7 +408,7 @@ if __name__ == '__main__':
     p = parser.parse_args()
     if p.config is not None:
         with open(p.config, 'r') as f:
-            default_arg = yaml.load(f)
+            default_arg = yaml.load(f, Loader=yaml.FullLoader)
         key = vars(p).keys()
         for k in default_arg.keys():
             if k not in key:
