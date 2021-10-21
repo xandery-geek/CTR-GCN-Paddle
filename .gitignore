@@ -5,7 +5,7 @@ data/fsd/raw_data/
 **/__pycache__/**
 work_dir/
 log/
-tmp*
+tmp/
 mnist/
 
 *.iml

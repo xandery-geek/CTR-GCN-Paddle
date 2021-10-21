@@ -44,6 +44,16 @@ class Feeder(Dataset):
         self.label = None
         self.sample_name = None
 
+        if self.vel:
+            print("Using motion information!")
+        else:
+            print("Not using motion information!")
+
+        if self.bone:
+            print("Using bone information!")
+        else:
+            print("Using joint information!")
+
         self.load_data()
         if normalization:
             self.get_mean_map()
@@ -88,7 +98,7 @@ class Feeder(Dataset):
         #     data_numpy = tools.random_rot(data_numpy)
         if self.bone:
             # bone information = \Delta(neighbor joint feature) at each frame
-            from bone_pairs import fsd_pairs
+            from feeders.bone_pairs import fsd_pairs
             bone_data_numpy = np.zeros_like(data_numpy)
             for v1, v2 in fsd_pairs:
                 bone_data_numpy[:, :, v1 - 1] = data_numpy[:, :, v1 - 1] - data_numpy[:, :, v2 - 1]

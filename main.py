@@ -42,13 +42,13 @@ class Processor:
                 arg.model_saved_name = os.path.join(arg.work_dir, 'runs')
                 if os.path.isdir(arg.model_saved_name):
                     print('log_dir: ', arg.model_saved_name, 'already exist')
+                    answer = input('delete it? y/n:')
+                    if answer == 'y':
+                        os.system('rm -rf ' + arg.model_saved_name)
+                        print('Dir removed: ', arg.model_saved_name)
+                    else:
+                        print('Dir not removed: ', arg.model_saved_name)
 
-                    # answer = input('delete it? y/n:')
-                    # if answer == 'y':
-                    #     os.system('rm -rf ' + arg.model_saved_name)
-                    #     print('Dir removed: ', arg.model_saved_name)
-                    # else:
-                    #     print('Dir not removed: ', arg.model_saved_name)
                 self.train_writer = SummaryWriter(os.path.join(arg.model_saved_name, 'train'), 'train')
                 self.val_writer = SummaryWriter(os.path.join(arg.model_saved_name, 'val'), 'val')
             else:
@@ -66,12 +66,10 @@ class Processor:
         self.best_acc_epoch = 0
 
         if not arg.cpu:
-            # self.model = self.model.cuda(self.output_device)
-            if type(self.arg.device) is list:
-                if len(self.arg.device) > 1:
-                    self.print_log("Using {}".format(self.arg.device))
-                    paddle.distributed.init_parallel_env()
-                    self.model = paddle.DataParallel(self.model)
+            if type(self.arg.device) is list and len(self.arg.device) > 1:
+                self.print_log("Using device {}".format(self.arg.device))
+                paddle.distributed.init_parallel_env()
+                self.model = paddle.DataParallel(self.model)
 
     def load_data(self):
         Feeder = import_class(self.arg.feeder)
@@ -96,11 +94,7 @@ class Processor:
         output_device = self.arg.device[0] if type(self.arg.device) is list else self.arg.device
         self.output_device = output_device
         Model = import_class(self.arg.model)
-        # shutil.copy2(inspect.getfile(Model), self.arg.work_dir)
-        # print(Model)
         self.model = Model(**self.arg.model_args)
-        # print(self.model)
-
         self.loss = nn.CrossEntropyLoss()
 
         if self.arg.phase == 'test' or self.arg.phase == 'predict':
@@ -195,10 +189,6 @@ class Processor:
 
         for batch_idx, (data, label, index) in enumerate(process):
             self.global_step += 1
-            # with paddle.no_grad():
-                # data = data.float()
-                # label = label.long()
-
             timer['dataloader'] += self.split_time()
 
             # forward
@@ -213,7 +203,6 @@ class Processor:
             timer['model'] += self.split_time()
 
             predict_label = np.argmax(output.numpy(), axis=1)
-            # value, predict_label = paddle.max(output, 1)
             acc = paddle.mean((paddle.to_tensor(predict_label) == label).astype('float32'))
             acc_value.append(acc.numpy())
             self.train_writer.add_scalar('acc', acc.numpy(), self.global_step)
@@ -230,9 +219,9 @@ class Processor:
             for k, v in timer.items()
         }
 
-        self.print_log('\tMean training loss: {:.4f}.  Mean training acc: {:.2f}%.'.format(np.mean(loss_value),
-                                                                                           np.mean(acc_value)*100))
-        self.print_log('\tTime consumption: [Data]{dataloader}, [Network]{model}'.format(**proportion))
+        self.print_log('\tMean training loss: {:.4f}.  Mean training acc: '
+                       '{:.2f}%.'.format(np.mean(loss_value), np.mean(acc_value)*100))
+        self.print_log('\tTime consumption: [Data]: {dataloader}, [Network]: {model}'.format(**proportion))
 
         if save_model:
             state_dict = self.model.state_dict()
@@ -259,16 +248,12 @@ class Processor:
             for batch_idx, (data, label, index) in enumerate(process):
                 label_list.append(label)
                 with paddle.no_grad():
-                    # data = data.float()
-                    # label = label.long()
-
                     output = self.model(data)
                     loss = self.loss(output, label)
                     score_frag.append(output.numpy())
                     loss_value.append(loss.numpy())
 
                     predict_label = np.argmax(output.numpy(), axis=1)
-                    # _, predict_label = paddle.max(output, 1)
                     pred_list.append(predict_label)
                     step += 1
 
@@ -295,13 +280,13 @@ class Processor:
                 self.val_writer.add_scalar('loss', loss, self.global_step)
                 self.val_writer.add_scalar('acc', accuracy, self.global_step)
 
+            # 记录每个sample的score
             score_dict = dict(zip(self.data_loader[ln].dataset.sample_name, score))
 
             self.print_log('\tMean {} loss of {} batches: {}.'.format(
                 ln, len(self.data_loader[ln]), np.mean(loss_value)))
             for k in self.arg.show_topk:
-                self.print_log('\tTop{}: {:.2f}%'.format(
-                    k, 100 * self.data_loader[ln].dataset.top_k(score, k)))
+                self.print_log('\tTop{}: {:.2f}%'.format(k, 100 * self.data_loader[ln].dataset.top_k(score, k)))
 
             if save_score:
                 with open('{}/epoch{}_{}_score.pkl'.format(
@@ -330,7 +315,6 @@ class Processor:
                     # data = data.float()
                     output = self.model(data)
                     predict_label = np.argmax(output.numpy(), axis=1)
-                    # _, predict_label = paddle.max(output.data, 1)
                     pred_list.append(predict_label)
 
             prediction = []
@@ -354,12 +338,15 @@ class Processor:
             self.print_log(f'# Parameters Size: {count_parameters(self.model)}')
 
             for epoch in range(self.arg.start_epoch, self.arg.num_epoch):
-                save_model = (((epoch + 1) % self.arg.save_interval == 0) or (
-                        epoch + 1 == self.arg.num_epoch)) and (epoch+1) > self.arg.save_epoch
+                save_model = ((epoch + 1) % self.arg.save_interval == 0 and (epoch+1) > self.arg.save_epoch) \
+                             or (epoch + 1 == self.arg.num_epoch)
                 self.train(epoch, save_model=save_model)
 
                 if self.arg.phase == 'eval':
                     self.eval(epoch, save_score=self.arg.save_score, loader_name=('test',))
+
+            if self.arg.phase == 'train':
+                self.eval(self.arg.num_epoch, save_score=True, loader_name=('test',))
 
             if self.arg.phase == 'eval':
                 # test the best model
