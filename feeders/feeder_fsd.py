@@ -64,15 +64,15 @@ class Feeder(Dataset):
         if self.phase == "eval":
             npz_data = np.load(self.data_path)
             npz_label = np.load(self.label_path)
-            size = int(len(npz_data))
-            factor = 0.8
 
             if self.split == "train":
-                self.data = npz_data[:int(size*factor)]
-                self.label = npz_label[:int(size*factor)]
+                train_index = np.load('data/fsd/train_index.npy')
+                self.data = npz_data[train_index]
+                self.label = npz_label[train_index]
             elif self.split == "test":
-                self.data = npz_data[int(size*factor):]
-                self.label = npz_label[int(size*factor):]
+                test_index = np.load('data/fsd/test_index.npy')
+                self.data = npz_data[test_index]
+                self.label = npz_label[test_index]
         else:
             npz_data = np.load(self.data_path)
             if self.label_path:
