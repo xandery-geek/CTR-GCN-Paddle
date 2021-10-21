@@ -17,21 +17,6 @@ train_feeder_args:
   vel: False
   bone: False
 
-#train_val_args:
-#  data_path: data/fsd/raw_data/train_data.npy
-#  label_path: data/fsd/raw_data/train_label.npy
-#  split: val
-#  debug: False
-#  random_choose: False
-#  random_shift: False
-#  random_move: False
-#  window_size: 64
-#  normalization: False
-#  random_rot: True
-#  p_interval: [0.5, 1]
-#  vel: False
-#  bone: False
-
 test_feeder_args:
   data_path: data/fsd/raw_data/test_A_data.npy
   split: test

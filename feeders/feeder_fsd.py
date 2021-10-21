@@ -5,7 +5,7 @@ from paddle.io import Dataset
 
 
 class Feeder(Dataset):
-    def __init__(self, data_path, label_path=None, p_interval=1, split='train', random_choose=False, random_shift=False,
+    def __init__(self, data_path, phase='train', label_path=None, p_interval=1, split='train', random_choose=False, random_shift=False,
                  random_move=False, random_rot=False, window_size=-1, normalization=False, debug=False, use_mmap=False,
                  bone=False, vel=False):
         """
@@ -22,7 +22,7 @@ class Feeder(Dataset):
         :param use_mmap: If true, use mmap mode to load data, which can save the running memory
         :param bone: use bone modality or not
         :param vel: use motion modality or not, if bone is False, return the motion of joints, else return the motion of bones
-        :param only_label: only load label for ensemble score compute
+        :param eval: eval phase
         """
 
         super().__init__()
@@ -40,19 +40,20 @@ class Feeder(Dataset):
         self.random_rot = random_rot
         self.bone = bone
         self.vel = vel
+        self.phase = phase
         self.data = None
         self.label = None
         self.sample_name = None
-
-        if self.vel:
-            print("Using motion information!")
-        else:
-            print("Not using motion information!")
 
         if self.bone:
             print("Using bone information!")
         else:
             print("Using joint information!")
+
+        if self.vel:
+            print("Using motion information!")
+        else:
+            print("Not using motion information!")
 
         self.load_data()
         if normalization:
@@ -60,18 +61,24 @@ class Feeder(Dataset):
 
     def load_data(self):
         # data: N C V T M
-        npz_data = np.load(self.data_path)
-        if self.label_path:
+        if self.phase == "eval":
+            npz_data = np.load(self.data_path)
             npz_label = np.load(self.label_path)
-        else:
-            npz_label = np.zeros(npz_data.shape[0], dtype=np.int32)
-
-        if self.split == 'train':
             size = int(len(npz_data))
-            self.data = npz_data[:size]
-            self.label = npz_label[:size]
-            self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
+            factor = 0.8
+
+            if self.split == "train":
+                self.data = npz_data[:int(size*factor)]
+                self.label = npz_label[:int(size*factor)]
+            elif self.split == "test":
+                self.data = npz_data[int(size*factor):]
+                self.label = npz_label[int(size*factor):]
         else:
+            npz_data = np.load(self.data_path)
+            if self.label_path:
+                npz_label = np.load(self.label_path)
+            else:
+                npz_label = np.zeros(npz_data.shape[0], dtype=np.int64)
             self.data = npz_data
             self.label = npz_label
             self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]

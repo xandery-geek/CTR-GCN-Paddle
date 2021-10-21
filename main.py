@@ -104,10 +104,10 @@ class Processor:
 
         if self.arg.weights:
             # saved_filename format: runs-65-11830.pt
-            self.global_step = int(self.arg.weights[:-3].split('-')[-1])
+            self.global_step = int(self.arg.weights[:-9].split('-')[-1])
             self.print_log('Load weights from {}.'.format(self.arg.weights))
             state_dict = paddle.load(self.arg.weights)
-            self.model.load_state_dict(state_dict)
+            self.model.set_state_dict(state_dict)
 
     def load_optimizer(self):
         if self.arg.optimizer == 'SGD':
@@ -246,7 +246,7 @@ class Processor:
             step = 0
             process = tqdm(self.data_loader[ln], ncols=40)
             for batch_idx, (data, label, index) in enumerate(process):
-                label_list.append(label)
+                label_list.append(label.numpy())
                 with paddle.no_grad():
                     output = self.model(data)
                     loss = self.loss(output, label)
@@ -264,7 +264,7 @@ class Processor:
                         if result_file is not None:
                             f_r.write(str(x) + ',' + str(true[i]) + '\n')
                         if x != true[i] and wrong_file is not None:
-                            f_w.write(str(index[i]) + ',' + str(x) + ',' + str(true[i]) + '\n')
+                            f_w.write(str(index[i].numpy()[0]) + ',' + str(x) + ',' + str(true[i]) + '\n')
 
             score = np.concatenate(score_frag)
             loss = np.mean(loss_value)
@@ -346,7 +346,7 @@ class Processor:
                     self.eval(epoch, save_score=self.arg.save_score, loader_name=('test',))
 
             if self.arg.phase == 'train':
-                self.eval(self.arg.num_epoch, save_score=True, loader_name=('test',))
+                self.eval(epoch=0, save_score=True, loader_name=('test',))
 
             if self.arg.phase == 'eval':
                 # test the best model
@@ -381,6 +381,7 @@ class Processor:
             self.arg.print_log = False
             self.print_log('Model:   {}.'.format(self.arg.model))
             self.print_log('Weights: {}.'.format(self.arg.weights))
+            self.arg.save_score = True
             self.eval(epoch=0, save_score=self.arg.save_score, loader_name=('test', ), wrong_file=wf, result_file=rf)
             self.print_log('Done.\n')
 
