@@ -1,6 +1,8 @@
 # Byte-compiled / optimized / DLL files
 .idea/
 data/fsd/raw_data/
+data/fsd/*.npy
+
 **/.DS_Store
 **/__pycache__/**
 work_dir/

@@ -92,6 +92,19 @@ def get_parser():
         action=DictAction,
         default=dict(),
         help='the arguments of data loader for test')
+    parser.add_argument(
+        '--bone',
+        type=str2bool,
+        default=False,
+        help="Whether to use the bone information"
+    )
+
+    parser.add_argument(
+        '--motion',
+        type=str2bool,
+        default=False,
+        help="Whether to use the motion information"
+    )
 
     # model
     parser.add_argument('--model', default=None, help='the model will be used')

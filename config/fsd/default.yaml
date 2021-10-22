@@ -1,11 +1,11 @@
-work_dir: ./work_dir/fsd/
+work_dir: ./work_dir/fsd3/
 
 # feeder
 feeder: feeders.feeder_fsd.Feeder
 train_feeder_args:
   data_path: data/fsd/raw_data/train_data.npy
   label_path: data/fsd/raw_data/train_label.npy
-  split: train # train or train_all
+  split: train
   debug: False
   random_choose: False
   random_shift: False
@@ -14,17 +14,16 @@ train_feeder_args:
   normalization: False
   random_rot: True
   p_interval: [0.5, 1]
-  vel: False
-  bone: False
 
 test_feeder_args:
   data_path: data/fsd/raw_data/test_A_data.npy
   split: test
   window_size: 64
   p_interval: [0.95]
-  vel: False
-  bone: False
   debug: False
+
+bone: False
+motion: False
 
 # processor
 phase: train

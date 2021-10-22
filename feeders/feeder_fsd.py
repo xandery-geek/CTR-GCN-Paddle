@@ -7,7 +7,7 @@ from paddle.io import Dataset
 class Feeder(Dataset):
     def __init__(self, data_path, phase='train', label_path=None, p_interval=1, split='train', random_choose=False, random_shift=False,
                  random_move=False, random_rot=False, window_size=-1, normalization=False, debug=False, use_mmap=False,
-                 bone=False, vel=False):
+                 bone=False, motion=False):
         """
         :param data_path:
         :param label_path:
@@ -39,7 +39,7 @@ class Feeder(Dataset):
         self.p_interval = p_interval
         self.random_rot = random_rot
         self.bone = bone
-        self.vel = vel
+        self.motion = motion
         self.phase = phase
         self.data = None
         self.label = None
@@ -50,7 +50,7 @@ class Feeder(Dataset):
         else:
             print("Using joint information!")
 
-        if self.vel:
+        if self.motion:
             print("Using motion information!")
         else:
             print("Not using motion information!")
@@ -110,7 +110,7 @@ class Feeder(Dataset):
             for v1, v2 in fsd_pairs:
                 bone_data_numpy[:, :, v1 - 1] = data_numpy[:, :, v1 - 1] - data_numpy[:, :, v2 - 1]
             data_numpy = bone_data_numpy
-        if self.vel:
+        if self.motion:
             # motion information = \Delta(joint feature) at succession frame
             data_numpy[:, :-1] = data_numpy[:, 1:] - data_numpy[:, :-1]
             data_numpy[:, -1] = 0

@@ -74,6 +74,8 @@ class Processor:
     def load_data(self):
         Feeder = import_class(self.arg.feeder)
         if self.arg.phase == 'train':
+            self.arg.train_feeder_args["bone"] = self.arg.bone
+            self.arg.train_feeder_args["motion"] = self.arg.motion
             self.data_loader['train'] = paddle.io.DataLoader(
                 dataset=Feeder(**self.arg.train_feeder_args),
                 batch_size=self.arg.batch_size,
@@ -82,6 +84,8 @@ class Processor:
                 drop_last=True,
                 worker_init_fn=init_seed)
 
+        self.arg.test_feeder_args["bone"] = self.arg.bone
+        self.arg.test_feeder_args["motion"] = self.arg.motion
         self.data_loader['test'] = paddle.io.DataLoader(
             dataset=Feeder(**self.arg.test_feeder_args),
             batch_size=self.arg.test_batch_size,
@@ -294,16 +298,16 @@ class Processor:
                     pickle.dump(score_dict, f)
 
             # acc for each class:
-            label_list = np.concatenate(label_list)
-            pred_list = np.concatenate(pred_list)
-            confusion = confusion_matrix(label_list, pred_list)
-            list_diag = np.diag(confusion)
-            list_raw_sum = np.sum(confusion, axis=1)
-            each_acc = list_diag / list_raw_sum
-            with open('{}/epoch{}_{}_each_class_acc.csv'.format(self.arg.work_dir, epoch + 1, ln), 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(each_acc)
-                writer.writerows(confusion)
+            # label_list = np.concatenate(label_list)
+            # pred_list = np.concatenate(pred_list)
+            # confusion = confusion_matrix(label_list, pred_list)
+            # list_diag = np.diag(confusion)
+            # list_raw_sum = np.sum(confusion, axis=1)
+            # each_acc = list_diag / list_raw_sum
+            # with open('{}/epoch{}_{}_each_class_acc.csv'.format(self.arg.work_dir, epoch + 1, ln), 'w') as f:
+            #     writer = csv.writer(f)
+            #     writer.writerow(each_acc)
+            #     writer.writerows(confusion)
 
     def predict(self, loader_name=('test', )):
         self.model.eval()
