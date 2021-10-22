@@ -73,7 +73,7 @@ class Processor:
 
     def load_data(self):
         Feeder = import_class(self.arg.feeder)
-        if self.arg.phase == 'train':
+        if self.arg.phase == 'train' or self.arg.phase == 'eval':
             self.arg.train_feeder_args["bone"] = self.arg.bone
             self.arg.train_feeder_args["motion"] = self.arg.motion
             self.data_loader['train'] = paddle.io.DataLoader(
