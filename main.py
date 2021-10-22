@@ -108,7 +108,12 @@ class Processor:
 
         if self.arg.weights:
             # saved_filename format: runs-65-11830.pt
-            self.global_step = int(self.arg.weights[:-9].split('-')[-1])
+            try:
+                self.global_step = int(self.arg.weights[:-9].split('-')[-1])
+            except ValueError as e:
+                print(e)
+                self.global_step = 0
+
             self.print_log('Load weights from {}.'.format(self.arg.weights))
             state_dict = paddle.load(self.arg.weights)
             self.model.set_state_dict(state_dict)

@@ -9,13 +9,14 @@ import csv
 def parser_arg():
     parser = argparse.ArgumentParser()
     parser.add_argument('--phase',
-                        default='test',
-                        required=True,
-                        choices={"test, predict"},
+                        default='predict',
+                        required=False,
+                        choices={"test", "predict"},
                         help="the phase of ensemble")
 
     parser.add_argument('--dataset',
-                        required=True,
+                        required=False,
+                        default='fsd',
                         choices={'fsd'},
                         help='the work folder for storing results')
     parser.add_argument('--alpha',
@@ -35,6 +36,11 @@ def parser_arg():
 
 
 def load_score(arg):
+    """
+
+    :param arg: arg
+    :return: r1, r2, r3, r4 (joint, bone, joint_motion, bone_motion)
+    """
     r1, r2, r3, r4 = None, None, None, None
 
     with open(os.path.join(arg.joint_dir, 'epoch1_test_score.pkl'), 'rb') as r1:
@@ -58,7 +64,7 @@ def test(arg):
     if dataset == 'fsd':
         data_path = "data/fsd/raw_data/train_data.npy"
         npz_data = np.load(data_path)
-        label = np.zeros(npz_data.shape[0], dtype=np.int32)
+        label = np.zeros(npz_data.shape[0], dtype=np.int64)
     else:
         raise NotImplementedError
 

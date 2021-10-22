@@ -9,7 +9,8 @@ work_dir/
 log/
 tmp/
 mnist/
-
+result/
+*.csv
 *.iml
 
 __pycache__/
