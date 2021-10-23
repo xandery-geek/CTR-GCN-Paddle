@@ -13,6 +13,7 @@ import paddle
 import paddle.nn as nn
 from tensorboardX import SummaryWriter
 from util.util import import_class
+from util.util import print_color
 import paddle.optimizer as optimizer
 from sklearn.metrics import confusion_matrix
 
@@ -41,13 +42,13 @@ class Processor:
             if not arg.train_feeder_args['debug']:
                 arg.model_saved_name = os.path.join(arg.work_dir, 'runs')
                 if os.path.isdir(arg.model_saved_name):
-                    print('log_dir: ', arg.model_saved_name, 'already exist')
+                    print_color('log_dir: {} already exist'.format(arg.model_saved_name))
                     answer = input('delete it? y/n:')
                     if answer == 'y':
                         os.system('rm -rf ' + arg.model_saved_name)
-                        print('Dir removed: ', arg.model_saved_name)
+                        print_color('Dir removed: {}'.format(arg.model_saved_name), color='red')
                     else:
-                        print('Dir not removed: ', arg.model_saved_name)
+                        print_color('Dir not removed: {}'.format(arg.model_saved_name), color='red')
 
                 self.train_writer = SummaryWriter(os.path.join(arg.model_saved_name, 'train'), 'train')
                 self.val_writer = SummaryWriter(os.path.join(arg.model_saved_name, 'val'), 'val')
@@ -77,17 +78,21 @@ class Processor:
             self.arg.train_feeder_args["bone"] = self.arg.bone
             self.arg.train_feeder_args["motion"] = self.arg.motion
             self.data_loader['train'] = paddle.io.DataLoader(
-                dataset=Feeder(**self.arg.train_feeder_args),
+                dataset=Feeder(phase=self.arg.phase, **self.arg.train_feeder_args),
                 batch_size=self.arg.batch_size,
                 shuffle=True,
                 num_workers=self.arg.num_worker,
                 drop_last=True,
                 worker_init_fn=init_seed)
 
+        if self.arg.phase == 'eval':
+            self.arg.test_feeder_args["data_path"] = self.arg.train_feeder_args["data_path"]
+            self.arg.test_feeder_args["label_path"] = self.arg.train_feeder_args["label_path"]
+
         self.arg.test_feeder_args["bone"] = self.arg.bone
         self.arg.test_feeder_args["motion"] = self.arg.motion
         self.data_loader['test'] = paddle.io.DataLoader(
-            dataset=Feeder(**self.arg.test_feeder_args),
+            dataset=Feeder(phase=self.arg.phase, **self.arg.test_feeder_args),
             batch_size=self.arg.test_batch_size,
             shuffle=False,
             num_workers=self.arg.num_worker,
@@ -111,7 +116,7 @@ class Processor:
             try:
                 self.global_step = int(self.arg.weights[:-9].split('-')[-1])
             except ValueError as e:
-                print(e)
+                print_color(e, color='red')
                 self.global_step = 0
 
             self.print_log('Load weights from {}.'.format(self.arg.weights))
@@ -284,7 +289,7 @@ class Processor:
                 self.best_acc = accuracy
                 self.best_acc_epoch = epoch + 1
 
-            print('Accuracy: ', accuracy, ' model: ', self.arg.model_saved_name)
+            print_color('Accuracy: {} Models: {}.'.format(accuracy, self.arg.model_saved_name))
             if self.arg.phase == 'eval':
                 self.val_writer.add_scalar('loss', loss, self.global_step)
                 self.val_writer.add_scalar('acc', accuracy, self.global_step)

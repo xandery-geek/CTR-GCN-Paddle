@@ -1,4 +1,4 @@
-work_dir: ./work_dir/fsd/
+work_dir: ./work_dir/fsd2/
 
 # feeder
 feeder: feeders.feeder_fsd.Feeder
@@ -26,12 +26,12 @@ bone: False
 motion: False
 
 # processor
-phase: train
+phase: eval
 save_score: False
 
 # model
 model: model.ctrgcn.Model
-#weights: ./work_dir/fsd/runs-65-11830.pt
+# weights: ./work_dir/fsd_bmotion/best.pdparams
 model_args:
   num_class: 30
   num_point: 25

@@ -20,7 +20,7 @@ elif [ "$2" == 'b_motion' ]; then
 fi
 
 if [ "$2" == 'ensemble' ]; then
-  python ensemble.py --phase predict --bone-dir work_dir/fsd_bone --joint-dir work_dir/fsd_join
+  python ensemble.py --phase predict --bone-dir work_dir/fsd_bone --joint-dir work_dir/fsd_joint --joint-motion-dir work_dir/fsd_jmotion --bone-motion-dir work_dir/fsd_bmotion
 fi
 
 

@@ -23,3 +23,13 @@ class DictAction(argparse.Action):
         for k in input_dict:
             output_dict[k] = input_dict[k]
         setattr(namespace, self.dest, output_dict)
+
+
+def print_color(content, color='blue'):
+    color_map = {
+        "red": "31m",
+        "green": "32m",
+        "yellow": "33m",
+        "blue": "34m",
+    }
+    print("\033[{}{}\033[0m".format(color_map[color], content))

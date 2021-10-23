@@ -1,6 +1,7 @@
 import numpy as np
 
 from paddle.io import Dataset
+from util.util import print_color
 # from feeders import tools
 
 
@@ -46,14 +47,14 @@ class Feeder(Dataset):
         self.sample_name = None
 
         if self.bone:
-            print("Using bone information!")
+            print_color(">>> Using bone information! <<<")
         else:
-            print("Using joint information!")
+            print_color(">>> Using joint information! <<<")
 
         if self.motion:
-            print("Using motion information!")
+            print_color(">>> Using motion information! <<<")
         else:
-            print("Not using motion information!")
+            print_color(">>> Not using motion information! <<<")
 
         self.load_data()
         if normalization:
@@ -66,13 +67,17 @@ class Feeder(Dataset):
             npz_label = np.load(self.label_path)
 
             if self.split == "train":
+                print_color(">>> Loading train index for evaluation <<<")
                 train_index = np.load('data/fsd/train_index.npy')
                 self.data = npz_data[train_index]
                 self.label = npz_label[train_index]
+                self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
             elif self.split == "test":
+                print_color(">>> Loading test index for evaluation <<<")
                 test_index = np.load('data/fsd/test_index.npy')
                 self.data = npz_data[test_index]
                 self.label = npz_label[test_index]
+                self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
         else:
             npz_data = np.load(self.data_path)
             if self.label_path:
