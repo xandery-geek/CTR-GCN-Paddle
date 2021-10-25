@@ -7,7 +7,6 @@ data/fsd/*.npy
 **/__pycache__/**
 work_dir/
 log/
-tmp/
 mnist/
 result/
 *.csv

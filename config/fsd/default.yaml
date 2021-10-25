@@ -41,6 +41,7 @@ model_args:
     labeling_mode: 'spatial'
 
 #optim
+start_epoch: 0
 weight_decay: 0.0004
 base_lr: 0.1
 lr_decay_rate: 0.1

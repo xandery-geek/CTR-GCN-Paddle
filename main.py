@@ -68,7 +68,6 @@ class Processor:
 
         if not arg.cpu:
             if type(self.arg.device) is list and len(self.arg.device) > 1:
-                self.print_log("Using device {}".format(self.arg.device))
                 paddle.distributed.init_parallel_env()
                 self.model = paddle.DataParallel(self.model)
 
@@ -112,7 +111,7 @@ class Processor:
                 exit(-1)
 
         if self.arg.weights:
-            # saved_filename format: runs-65-11830.pt
+            # saved_filename format: runs-65-11830.pdparams
             try:
                 self.global_step = int(self.arg.weights[:-9].split('-')[-1])
             except ValueError as e:
@@ -233,8 +232,8 @@ class Processor:
             for k, v in timer.items()
         }
 
-        self.print_log('\tMean training loss: {:.4f}.  Mean training acc: '
-                       '{:.2f}%.'.format(np.mean(loss_value), np.mean(acc_value)*100))
+        self.print_log('\tMean training loss: {:.4f} Mean training acc: '
+                       '{:.2f}%'.format(np.mean(loss_value), np.mean(acc_value)*100))
         self.print_log('\tTime consumption: [Data]: {dataloader}, [Network]: {model}'.format(**proportion))
 
         if save_model:
@@ -367,7 +366,7 @@ class Processor:
                 weights_path = glob.glob(os.path.join(self.arg.work_dir, 'runs-'+str(self.best_acc_epoch)+'*'))[0]
 
                 state_dict = paddle.load(weights_path)
-                self.model.load_state_dict(state_dict)
+                self.model.set_state_dict(state_dict)
 
                 wf = weights_path.replace('.pdparams', '_wrong.txt')
                 rf = weights_path.replace('.pdparams', '_right.txt')
