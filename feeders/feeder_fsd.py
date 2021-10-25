@@ -6,12 +6,13 @@ from util.util import print_color
 
 
 class Feeder(Dataset):
-    def __init__(self, data_path, phase='train', label_path=None, p_interval=1, split='train', random_choose=False, random_shift=False,
-                 random_move=False, random_rot=False, window_size=-1, normalization=False, debug=False, use_mmap=False,
-                 bone=False, motion=False):
+    def __init__(self, data_path, label_path=None, phase='train', p_interval=1, split='train', random_choose=False,
+                 random_shift=False, random_move=False, random_rot=False, window_size=-1, normalization=False,
+                 debug=False, use_mmap=False, bone=False, motion=False, augmentation=None):
         """
         :param data_path:
         :param label_path:
+        :param phase:
         :param split: training set or test set
         :param random_choose: If true, randomly choose a portion of the input sequence
         :param random_shift: If true, randomly pad zeros at the begining or end of sequence
@@ -22,8 +23,8 @@ class Feeder(Dataset):
         :param debug: If true, only use the first 100 samples
         :param use_mmap: If true, use mmap mode to load data, which can save the running memory
         :param bone: use bone modality or not
-        :param vel: use motion modality or not, if bone is False, return the motion of joints, else return the motion of bones
-        :param eval: eval phase
+        :param motion: use motion modality or not, if bone is False, return the motion of joints, else return the motion of bones
+        :param augmentation: data augmentation
         """
 
         super().__init__()
@@ -41,6 +42,7 @@ class Feeder(Dataset):
         self.random_rot = random_rot
         self.bone = bone
         self.motion = motion
+        self.augmentation = augmentation
         self.phase = phase
         self.data = None
         self.label = None
@@ -71,13 +73,12 @@ class Feeder(Dataset):
                 train_index = np.load('data/fsd/train_index.npy')
                 self.data = npz_data[train_index]
                 self.label = npz_label[train_index]
-                self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
+
             elif self.split == "test":
                 print_color(">>> Loading test index for evaluation <<<")
                 test_index = np.load('data/fsd/test_index.npy')
                 self.data = npz_data[test_index]
                 self.label = npz_label[test_index]
-                self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
         else:
             npz_data = np.load(self.data_path)
             if self.label_path:
@@ -86,7 +87,46 @@ class Feeder(Dataset):
                 npz_label = np.zeros(npz_data.shape[0], dtype=np.int64)
             self.data = npz_data
             self.label = npz_label
-            self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
+
+        if self.augmentation:
+            self.data_argumentation()
+
+        # set sample name for each sample
+        self.sample_name = [self.split + '_' + str(i) for i in range(len(self.data))]
+
+    def data_argumentation(self):
+        if self.augmentation == "avg":
+            "calculate average of neighbor frame"
+            N, C, T, V, M = self.data.shape
+            new_data = np.zeros(shape=self.data.shape)
+            for i in range(T-1):
+                new_data[:, :, i, :, :] = 0.5 * self.data[:, :, i, :, :] + 0.5 * self.data[:, :, i+1, :, :]
+
+            new_data[:, :, -1, :, :] = self.data[:, :, -1, :, :]
+            self.data = np.concatenate((self.data, new_data), axis=0)
+            self.label = np.concatenate((self.label, self.label), axis=0)
+
+        elif self.augmentation == 'conf':
+            "calculate weighted sum of neighbor frame based on confidence"
+            N, C, T, V, M = self.data.shape
+            new_data = np.zeros(shape=self.data.shape)
+            for i in range(T-1):
+                conf1 = self.data[:, 2, i, :, :]
+                conf2 = self.data[:, 2, i+1, :, :]
+
+                conf_sum = conf1 + conf2
+                conf_sum = np.where(conf_sum > 0, conf_sum, 1)
+
+                conf1 = conf1/conf_sum
+                conf2 = conf2/conf_sum
+
+                new_data[:, 0, i, :, :] = conf1 * self.data[:, 0, i, :, :] + conf2 * self.data[:, 0, i+1, :, :]
+                new_data[:, 1, i, :, :] = conf1 * self.data[:, 1, i, :, :] + conf2 * self.data[:, 1, i+1, :, :]
+                new_data[:, 2, i, :, :] = 0.5 * self.data[:, 2, i, :, :] + 0.5 * self.data[:, 2, i+1, :, :]
+
+            new_data[:, :, -1, :, :] = self.data[:, :, -1, :, :]
+            self.data = np.concatenate((self.data, new_data), axis=0)
+            self.label = np.concatenate((self.label, self.label), axis=0)
 
     def get_mean_map(self):
         data = self.data

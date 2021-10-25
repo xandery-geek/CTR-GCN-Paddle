@@ -14,6 +14,7 @@ train_feeder_args:
   normalization: False
   random_rot: True
   p_interval: [0.5, 1]
+  augmentation: 'avg'
 
 test_feeder_args:
   data_path: data/fsd/raw_data/test_A_data.npy
