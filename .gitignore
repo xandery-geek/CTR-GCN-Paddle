@@ -9,6 +9,7 @@ work_dir/
 log/
 mnist/
 result/
+visualization/
 *.csv
 *.iml
 

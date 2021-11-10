@@ -6,4 +6,4 @@
 - 结合Transformer的思想
   - Temporal : 1D CNN -> Transformer
   - Graph Structure: GCN -> Transformer
-  - 
+  - data preprocess: 删除无用的骨骼点

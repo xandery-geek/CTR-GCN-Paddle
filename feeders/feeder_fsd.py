@@ -88,6 +88,8 @@ class Feeder(Dataset):
             self.data = npz_data
             self.label = npz_label
 
+        del npz_data
+        del npz_label
         if self.augmentation:
             self.data_argumentation()
 
@@ -97,8 +99,9 @@ class Feeder(Dataset):
     def data_argumentation(self):
         if self.augmentation == "avg":
             "calculate average of neighbor frame"
+            print_color(">>> Augmenting dataset with 'avg' <<<")
             N, C, T, V, M = self.data.shape
-            new_data = np.zeros(shape=self.data.shape)
+            new_data = np.zeros(shape=self.data.shape, dtype=self.data.dtype)
             for i in range(T-1):
                 new_data[:, :, i, :, :] = 0.5 * self.data[:, :, i, :, :] + 0.5 * self.data[:, :, i+1, :, :]
 
@@ -108,8 +111,9 @@ class Feeder(Dataset):
 
         elif self.augmentation == 'conf':
             "calculate weighted sum of neighbor frame based on confidence"
+            print_color(">>> Augmenting dataset with 'confidence' <<<")
             N, C, T, V, M = self.data.shape
-            new_data = np.zeros(shape=self.data.shape)
+            new_data = np.zeros(shape=self.data.shape, dtype=self.data.dtype)
             for i in range(T-1):
                 conf1 = self.data[:, 2, i, :, :]
                 conf2 = self.data[:, 2, i+1, :, :]

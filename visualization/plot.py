@@ -78,15 +78,15 @@ if __name__ == '__main__':
         "eval_epoch": eval_epoch,
         "train_acc": train_acc,
         "eval_acc": eval_acc,
-        "label": "ctrgcn"
+        "label": "baseline"
     })
-    train_epoch, eval_epoch, train_acc, eval_acc = load_log("../work_dir/fsd3/log.txt")
+    train_epoch, eval_epoch, train_acc, eval_acc = load_log("../work_dir/fsd4/log.txt")
     data.append({
         "train_epoch": train_epoch,
         "eval_epoch": eval_epoch,
         "train_acc": train_acc,
         "eval_acc": eval_acc,
-        "label": "ctrgcn2"
+        "label": "augmentation"
     })
     plot_acc_curve(data)
 
