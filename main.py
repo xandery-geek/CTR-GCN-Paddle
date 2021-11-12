@@ -40,7 +40,7 @@ class Processor:
 
         if arg.phase == 'train' or arg.phase == 'eval':
             if not arg.train_feeder_args['debug']:
-                arg.model_saved_name = os.path.join(arg.work_dir, 'runs')
+                arg.model_saved_name = os.path.join(arg.work_dir)
                 if os.path.isdir(arg.model_saved_name):
                     print_color('log_dir: {} already exist'.format(arg.model_saved_name))
                     answer = input('delete it? y/n:')
@@ -64,6 +64,8 @@ class Processor:
             self.load_data()
         self.lr = self.arg.base_lr
         self.best_acc = 0
+        self.best_timer = 0
+        self.early_stop = False
         self.best_acc_epoch = 0
 
         if not arg.cpu:
@@ -233,15 +235,16 @@ class Processor:
         }
 
         self.print_log('\tMean training loss: {:.4f} Mean training acc: '
-                       '{:.2f}%'.format(np.mean(loss_value), np.mean(acc_value)*100))
+                       '{:.2f}%'.format(np.mean(loss_value), np.mean(acc_value) * 100))
         self.print_log('\tTime consumption: [Data]: {dataloader}, [Network]: {model}'.format(**proportion))
 
         if save_model:
             state_dict = self.model.state_dict()
             paddle.save(state_dict,
-                        self.arg.model_saved_name + '-' + str(epoch+1) + '-' + str(int(self.global_step)) + '.pdparams')
+                        self.arg.model_saved_name + '/runs-' + str(epoch + 1) + '-' + str(
+                            int(self.global_step)) + '.pdparams')
 
-    def eval(self, epoch, save_score=False, loader_name=('test', ), wrong_file=None, result_file=None):
+    def eval(self, epoch, save_score=False, loader_name=('test',), wrong_file=None, result_file=None):
         f_w = None
         f_r = None
         if wrong_file is not None:
@@ -285,8 +288,14 @@ class Processor:
 
             # record best epoch
             if accuracy > self.best_acc:
+                self.best_timer = 0
                 self.best_acc = accuracy
                 self.best_acc_epoch = epoch + 1
+            else:
+                # early stop
+                self.best_timer += 1
+                if self.best_timer > 10:
+                    self.early_stop = True
 
             print_color('Accuracy: {} Models: {}.'.format(accuracy, self.arg.model_saved_name))
             if self.arg.phase == 'eval':
@@ -318,7 +327,7 @@ class Processor:
             #     writer.writerow(each_acc)
             #     writer.writerows(confusion)
 
-    def predict(self, loader_name=('test', )):
+    def predict(self, loader_name=('test',)):
         self.model.eval()
         for ln in loader_name:
             pred_list = []
@@ -351,7 +360,11 @@ class Processor:
             self.print_log(f'# Parameters Size: {count_parameters(self.model)}')
 
             for epoch in range(self.arg.start_epoch, self.arg.num_epoch):
-                save_model = ((epoch + 1) % self.arg.save_interval == 0 and (epoch+1) > self.arg.save_epoch) \
+                if self.early_stop:
+                    print_color("Early stop at {} epoch".format(epoch), color='red')
+                    break
+
+                save_model = ((epoch + 1) % self.arg.save_interval == 0 and (epoch + 1) > self.arg.save_epoch) \
                              or (epoch + 1 == self.arg.num_epoch)
                 self.train(epoch, save_model=save_model)
 
@@ -360,10 +373,9 @@ class Processor:
 
             if self.arg.phase == 'train':
                 self.eval(epoch=0, save_score=True, loader_name=('test',))
-
-            if self.arg.phase == 'eval':
+            elif self.arg.phase == 'eval':
                 # test the best model
-                weights_path = glob.glob(os.path.join(self.arg.work_dir, 'runs-'+str(self.best_acc_epoch)+'*'))[0]
+                weights_path = glob.glob(os.path.join(self.arg.work_dir, 'runs-' + str(self.best_acc_epoch) + '*'))[0]
 
                 state_dict = paddle.load(weights_path)
                 self.model.set_state_dict(state_dict)
@@ -374,11 +386,10 @@ class Processor:
                 self.eval(epoch=0, save_score=True, loader_name=('test',), wrong_file=wf, result_file=rf)
                 self.arg.print_log = True
 
-                num_params = sum(p.numel() for p in self.model.parameters() if not p.stop_gradient)
                 self.print_log(f'Best accuracy: {self.best_acc}')
                 self.print_log(f'Epoch number: {self.best_acc_epoch}')
                 self.print_log(f'Model name: {self.arg.work_dir}')
-                self.print_log(f'Model total number of params: {num_params}')
+                self.print_log(f'Model total number of params: {count_parameters(self.model)}')
                 self.print_log(f'Weight decay: {self.arg.weight_decay}')
                 self.print_log(f'Base LR: {self.arg.base_lr}')
                 self.print_log(f'Batch Size: {self.arg.batch_size}')
@@ -395,7 +406,7 @@ class Processor:
             self.print_log('Model:   {}.'.format(self.arg.model))
             self.print_log('Weights: {}.'.format(self.arg.weights))
             self.arg.save_score = True
-            self.eval(epoch=0, save_score=self.arg.save_score, loader_name=('test', ), wrong_file=wf, result_file=rf)
+            self.eval(epoch=0, save_score=self.arg.save_score, loader_name=('test',), wrong_file=wf, result_file=rf)
             self.print_log('Done.\n')
 
         elif self.arg.phase == 'predict':

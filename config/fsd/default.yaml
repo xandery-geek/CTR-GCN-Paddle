@@ -1,4 +1,4 @@
-work_dir: ./work_dir/fsd2/
+work_dir: ./work_dir/fsd_a_dropout/
 
 # feeder
 feeder: feeders.feeder_fsd.Feeder
@@ -14,7 +14,7 @@ train_feeder_args:
   normalization: False
   random_rot: True
   p_interval: [0.5, 1]
-  augmentation: 'avg'
+  augmentation: ''
 
 test_feeder_args:
   data_path: data/fsd/raw_data/test_A_data.npy
@@ -40,6 +40,7 @@ model_args:
   graph: graph.fsd.Graph
   graph_args:
     labeling_mode: 'spatial'
+  drop_out: 0.5
 
 #optim
 start_epoch: 0

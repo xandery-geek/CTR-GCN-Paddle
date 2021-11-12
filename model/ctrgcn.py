@@ -1,6 +1,7 @@
 import paddle
 import paddle.nn as nn
 from util.util import import_class
+from util.util import print_color
 import paddle.nn.initializer as init
 import numpy as np
 import math
@@ -348,6 +349,7 @@ class Model(nn.Layer):
         init.Normal(0, math.sqrt(2. / num_class))(self.fc.weight)
         bn_init(self.data_bn, 1)
         if drop_out:
+            print_color(">>> Using dropout: {} <<<".format(drop_out))
             self.drop_out = nn.Dropout(drop_out)
         else:
             self.drop_out = lambda x: x

@@ -11,6 +11,7 @@ mnist/
 result/
 visualization/
 *.csv
+*.json
 *.iml
 
 __pycache__/
