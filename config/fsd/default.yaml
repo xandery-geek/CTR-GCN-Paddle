@@ -14,10 +14,12 @@ train_feeder_args:
   normalization: False
   random_rot: True
   p_interval: [0.5, 1]
-  augmentation: ''
+  augmentation: 'conf'
 
 test_feeder_args:
-  data_path: data/fsd/raw_data/test_A_data.npy
+  # data_path: data/fsd/raw_data/test_A_data.npy
+  data_path: data/fsd/raw_data/eval_data.npy
+  label_path: data/fsd/raw_data/eval_label.npy
   split: test
   window_size: 64
   p_interval: [0.95]
@@ -52,8 +54,8 @@ warm_up_epoch: 5
 
 # training
 cpu: False
-device: [0, 1]
+device: []
 batch_size: 12
 test_batch_size: 8
-num_epoch: 65
+num_epoch: 70
 nesterov: True

@@ -86,9 +86,9 @@ class Processor:
                 drop_last=True,
                 worker_init_fn=init_seed)
 
-        if self.arg.phase == 'eval':
-            self.arg.test_feeder_args["data_path"] = self.arg.train_feeder_args["data_path"]
-            self.arg.test_feeder_args["label_path"] = self.arg.train_feeder_args["label_path"]
+        # if self.arg.phase == 'eval':
+        #     self.arg.test_feeder_args["data_path"] = self.arg.train_feeder_args["data_path"]
+        #     self.arg.test_feeder_args["label_path"] = self.arg.train_feeder_args["label_path"]
 
         self.arg.test_feeder_args["bone"] = self.arg.bone
         self.arg.test_feeder_args["motion"] = self.arg.motion

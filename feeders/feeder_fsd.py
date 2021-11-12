@@ -64,7 +64,7 @@ class Feeder(Dataset):
 
     def load_data(self):
         # data: N C V T M
-        if self.phase == "eval":
+        if self.phase == "eval" and False:
             npz_data = np.load(self.data_path)
             npz_label = np.load(self.label_path)
 
@@ -80,8 +80,10 @@ class Feeder(Dataset):
                 self.data = npz_data[test_index]
                 self.label = npz_label[test_index]
         else:
+            print_color(">>> Loading data from {} <<<".format(self.data_path))
             npz_data = np.load(self.data_path)
             if self.label_path:
+                print_color(">>> Loading label from {} <<<".format(self.label_path))
                 npz_label = np.load(self.label_path)
             else:
                 npz_label = np.zeros(npz_data.shape[0], dtype=np.int64)
