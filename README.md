@@ -7,3 +7,6 @@
   - Temporal : 1D CNN -> Transformer
   - Graph Structure: GCN -> Transformer
   - data preprocess: 删除无用的骨骼点
+- Unsupervised
+  - 伪标签
+  - 

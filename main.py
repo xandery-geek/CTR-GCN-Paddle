@@ -31,12 +31,12 @@ class Processor:
 
     def __init__(self, arg):
         self.arg = arg
-        self.save_arg()
-        self.output_device = None
         self.loss = None
         self.optimizer = None
         self.data_loader = dict()
         self.cur_time = None
+
+        print_color("\n>>> Current phase {} <<<\n".format(self.arg.phase), color="red")
 
         if arg.phase == 'train' or arg.phase == 'eval':
             if not arg.train_feeder_args['debug']:
@@ -72,6 +72,7 @@ class Processor:
             if type(self.arg.device) is list and len(self.arg.device) > 1:
                 paddle.distributed.init_parallel_env()
                 self.model = paddle.DataParallel(self.model)
+        self.save_arg()
 
     def load_data(self):
         Feeder = import_class(self.arg.feeder)
@@ -101,8 +102,6 @@ class Processor:
             worker_init_fn=init_seed)
 
     def load_model(self):
-        output_device = self.arg.device[0] if type(self.arg.device) is list else self.arg.device
-        self.output_device = output_device
         Model = import_class(self.arg.model)
         self.model = Model(**self.arg.model_args)
         self.loss = nn.CrossEntropyLoss()
@@ -294,7 +293,7 @@ class Processor:
             else:
                 # early stop
                 self.best_timer += 1
-                if self.best_timer > 10:
+                if self.best_timer > 15:
                     self.early_stop = True
 
             print_color('Accuracy: {} Models: {}.'.format(accuracy, self.arg.model_saved_name))

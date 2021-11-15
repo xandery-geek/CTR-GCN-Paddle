@@ -48,6 +48,7 @@ class Feeder(Dataset):
         self.label = None
         self.sample_name = None
 
+        print_color("\n>>> Loading {} dataset <<<".format(self.phase))
         if self.bone:
             print_color(">>> Using bone information! <<<")
         else:
@@ -64,21 +65,23 @@ class Feeder(Dataset):
 
     def load_data(self):
         # data: N C V T M
-        if self.phase == "eval" and False:
+        if self.phase == "eval":
             npz_data = np.load(self.data_path)
             npz_label = np.load(self.label_path)
 
             if self.split == "train":
                 print_color(">>> Loading train index for evaluation <<<")
-                train_index = np.load('data/fsd/train_index.npy')
+                train_index = np.load('data/fsd/raw_data/train_index.npy')
                 self.data = npz_data[train_index]
                 self.label = npz_label[train_index]
 
             elif self.split == "test":
-                print_color(">>> Loading test index for evaluation <<<")
-                test_index = np.load('data/fsd/test_index.npy')
-                self.data = npz_data[test_index]
-                self.label = npz_label[test_index]
+                # print_color(">>> Loading test index for evaluation <<<")
+                # test_index = np.load('data/fsd/test_index.npy')
+                # self.data = npz_data[test_index]
+                # self.label = npz_label[test_index]
+                self.data = npz_data
+                self.label = npz_label
         else:
             print_color(">>> Loading data from {} <<<".format(self.data_path))
             npz_data = np.load(self.data_path)
