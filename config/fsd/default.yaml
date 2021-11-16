@@ -34,7 +34,7 @@ save_score: False
 
 # model
 model: model.ctrgcn.Model
-# weights: ./work_dir/fsd_baseline/runs-42-9198.pdparams
+# weights: ./work_dir/fsd_baseline/runs-48-10512.pdparams
 model_args:
   num_class: 30
   num_point: 25

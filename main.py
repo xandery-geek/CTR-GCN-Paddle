@@ -293,7 +293,7 @@ class Processor:
             else:
                 # early stop
                 self.best_timer += 1
-                if self.best_timer > 15:
+                if self.best_timer > 10:
                     self.early_stop = True
 
             print_color('Accuracy: {} Models: {}.'.format(accuracy, self.arg.model_saved_name))
@@ -310,21 +310,26 @@ class Processor:
                 self.print_log('\tTop{}: {:.2f}%'.format(k, 100 * self.data_loader[ln].dataset.top_k(score, k)))
 
             if save_score:
-                with open('{}/epoch{}_{}_score.pkl'.format(
-                        self.arg.work_dir, epoch + 1, ln), 'wb') as f:
+                # save score
+                filename = '{}/epoch{}_{}_score.pkl'.format(self.arg.work_dir, epoch + 1, ln)
+                self.print_log("Saving score to file : {}".format(filename))
+                with open(filename, 'wb') as f:
                     pickle.dump(score_dict, f)
 
-            # acc for each class:
-            # label_list = np.concatenate(label_list)
-            # pred_list = np.concatenate(pred_list)
-            # confusion = confusion_matrix(label_list, pred_list)
-            # list_diag = np.diag(confusion)
-            # list_raw_sum = np.sum(confusion, axis=1)
-            # each_acc = list_diag / list_raw_sum
-            # with open('{}/epoch{}_{}_each_class_acc.csv'.format(self.arg.work_dir, epoch + 1, ln), 'w') as f:
-            #     writer = csv.writer(f)
-            #     writer.writerow(each_acc)
-            #     writer.writerows(confusion)
+                # save acc for each class:
+                label_list = np.concatenate(label_list)
+                pred_list = np.concatenate(pred_list)
+                confusion = confusion_matrix(label_list, pred_list)
+                list_diag = np.diag(confusion)
+                list_raw_sum = np.sum(confusion, axis=1)
+                each_acc = list_diag / list_raw_sum
+
+                filename = '{}/epoch{}_{}_each_class_acc.csv'.format(self.arg.work_dir, epoch + 1, ln)
+                self.print_log("Saving accuracy for each class to file : {}".format(filename))
+                with open(filename, 'w') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["class", 'acc'])
+                    writer.writerows(zip(range(len(each_acc)), each_acc))
 
     def predict(self, loader_name=('test',)):
         self.model.eval()
@@ -341,7 +346,10 @@ class Processor:
             prediction = []
             for p in pred_list:
                 prediction.extend(p.tolist())
-            with open('{}/prediction-{}.csv'.format(self.arg.work_dir, ln), 'w') as f:
+
+            filename = '{}/prediction-{}.csv'.format(self.arg.work_dir, ln)
+            self.print_log("Saving result of prediction to file : {}".format(filename))
+            with open(filename, 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(["sample_index", "predict_category"])
                 writer.writerows(zip(range(len(prediction)), prediction))

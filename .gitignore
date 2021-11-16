@@ -10,6 +10,7 @@ log/
 mnist/
 result/
 visualization/
+tools/
 *.csv
 *.json
 *.iml

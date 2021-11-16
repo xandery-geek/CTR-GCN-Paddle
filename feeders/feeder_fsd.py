@@ -48,7 +48,7 @@ class Feeder(Dataset):
         self.label = None
         self.sample_name = None
 
-        print_color("\n>>> Loading {} dataset <<<".format(self.phase))
+        print_color("\n>>> Loading {} dataset <<<".format(self.split))
         if self.bone:
             print_color(">>> Using bone information! <<<")
         else:

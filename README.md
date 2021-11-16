@@ -9,4 +9,5 @@
   - data preprocess: 删除无用的骨骼点
 - Unsupervised
   - 伪标签
-  - 
+- Trick
+  - TTA（测试时增强）
