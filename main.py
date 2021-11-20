@@ -16,6 +16,7 @@ from util.util import import_class
 from util.util import print_color
 import paddle.optimizer as optimizer
 from sklearn.metrics import confusion_matrix
+from feeders.tools import random_rot
 
 
 def init_seed(seed):
@@ -105,6 +106,7 @@ class Processor:
         Model = import_class(self.arg.model)
         self.model = Model(**self.arg.model_args)
         self.loss = nn.CrossEntropyLoss()
+        # self.loss = paddle.fluid.layers.sigmoid_focal_loss
 
         if self.arg.phase == 'test' or self.arg.phase == 'predict':
             if self.arg.weights is None:
@@ -338,8 +340,34 @@ class Processor:
             process = tqdm(self.data_loader[ln], ncols=40)
             for batch_idx, (data, label, index) in enumerate(process):
                 with paddle.no_grad():
-                    # data = data.float()
                     output = self.model(data)
+                    predict_label = np.argmax(output.numpy(), axis=1)
+                    pred_list.append(predict_label)
+
+            prediction = []
+            for p in pred_list:
+                prediction.extend(p.tolist())
+
+            filename = '{}/prediction-{}.csv'.format(self.arg.work_dir, ln)
+            self.print_log("Saving result of prediction to file : {}".format(filename))
+            with open(filename, 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(["sample_index", "predict_category"])
+                writer.writerows(zip(range(len(prediction)), prediction))
+
+    def predict_tta(self, loader_name=('test',)):
+        self.model.eval()
+        for ln in loader_name:
+            pred_list = []
+            process = tqdm(self.data_loader[ln], ncols=40)
+            for batch_idx, (data, label, index) in enumerate(process):
+                with paddle.no_grad():
+                    output_list = [self.model(data)]
+                    for i in range(5):
+                        data = random_rot(data)
+                        output = self.model(data)
+                        output_list.append(output)
+                    output = sum(output_list)
                     predict_label = np.argmax(output.numpy(), axis=1)
                     pred_list.append(predict_label)
 
@@ -357,7 +385,7 @@ class Processor:
     def start(self):
         if self.arg.phase == 'train' or self.arg.phase == 'eval':
             # self.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
-            self.global_step = self.arg.start_epoch * len(self.data_loader['train']) / self.arg.batch_size
+            self.global_step = self.arg.start_epoch * len(self.data_loader['train'])
 
             # print the size of parameters
             def count_parameters(model):

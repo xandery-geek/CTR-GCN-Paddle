@@ -111,11 +111,12 @@ def generate_eval_dataset():
 
     # Calculate the number of samples to be obtained from the train dataset
     for i, count in enumerate(class_count):
-        if count < 8:
-            class_count[i] = 8 - count
+        if count < 3:
+            class_count[i] = 3 - count
         else:
-            class_count[i] = 3
+            class_count[i] = 0
 
+    print(class_count)
     train_data, train_label = load_train_data()
     train_len = train_data.shape[0]
     train_index = list(range(train_len))
@@ -160,7 +161,7 @@ def partition_train_eval():
 
 
 if __name__ == '__main__':
-    # generate_eval_dataset()
+    generate_eval_dataset()
     # analyse_data()
 
-    partition_train_eval()
+    # partition_train_eval()

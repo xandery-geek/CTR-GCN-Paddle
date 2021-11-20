@@ -4,6 +4,7 @@ import os
 import numpy as np
 from tqdm import tqdm
 import csv
+from util.util import print_color
 
 
 def parser_arg():
@@ -125,6 +126,7 @@ def predict(arg):
 
     prediction = []
     if arg.joint_motion_dir is not None and arg.bone_motion_dir is not None:
+        print_color("Ensemble with all information")
         arg.alpha = [0.6, 0.6, 0.4, 0.4]
         for i in range(len(r1)):
             _, r11 = r1[i]
@@ -136,6 +138,7 @@ def predict(arg):
             prediction.append(r)
 
     elif arg.joint_motion_dir is not None and arg.bone_motion_dir is None:
+        print_color("Ensemble with joint, bone and joint motion information")
         arg.alpha = [0.6, 0.6, 0.4]
         for i in tqdm(range(len(r1))):
             _, r11 = r1[i]
@@ -145,6 +148,7 @@ def predict(arg):
             r = np.argmax(r)
             prediction.append(r)
     else:
+        print_color("Ensemble with joint and bone information")
         for i in tqdm(range(len(r1))):
             _, r11 = r1[i]
             _, r22 = r2[i]

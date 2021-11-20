@@ -66,12 +66,15 @@ class Feeder(Dataset):
     def load_data(self):
         # data: N C V T M
         if self.phase == "eval":
+            print_color(">>> Loading data from {} <<<".format(self.data_path))
+            print_color(">>> Loading label from {} <<<".format(self.label_path))
             npz_data = np.load(self.data_path)
             npz_label = np.load(self.label_path)
 
             if self.split == "train":
-                print_color(">>> Loading train index for evaluation <<<")
-                train_index = np.load('data/fsd/raw_data/train_index.npy')
+                train_index_path = 'data/fsd/raw_data/train_index2.npy'
+                print_color(">>> Loading train index from {} <<<".format(train_index_path))
+                train_index = np.load(train_index_path)
                 self.data = npz_data[train_index]
                 self.label = npz_label[train_index]
 
@@ -89,7 +92,7 @@ class Feeder(Dataset):
                 print_color(">>> Loading label from {} <<<".format(self.label_path))
                 npz_label = np.load(self.label_path)
             else:
-                npz_label = np.zeros(npz_data.shape[0], dtype=np.int64)
+                npz_label = np.random.randint(0, 30, size=npz_data.shape[0], dtype=np.int64)
             self.data = npz_data
             self.label = npz_label
 
