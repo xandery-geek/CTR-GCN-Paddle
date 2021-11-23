@@ -33,8 +33,8 @@ train data: [N, C, T, V, M]
 - ~~data preprocess: 删除无用的骨骼点~~
 - Data Augmentation
   - 根据骨骼点的前后两帧计算中间帧得到新的数据，有以下两种计算方式:
-  - [ ] average: 平均前后两帧的数据得到中间帧，$new_frame_data[i] = 0.5 * frame_data[i] + 0.5 frame_data[i+1]$
-  - [x] confidence: 根据置信度对前后两帧的数据进行加权，然后计算中间帧，$new_frame_data[i] = confidence[i] * frame_data[i] + confidence[i+1] * frame_data[i+1]$
+  - [ ] average: 平均前后两帧的数据得到中间帧，`new_frame_data[i] = 0.5 * frame_data[i] + 0.5 frame_data[i+1]`
+  - [x] confidence: 根据置信度对前后两帧的数据进行加权，然后计算中间帧，`new_frame_data[i] = confidence[i] * frame_data[i] + confidence[i+1] * frame_data[i+1]`
 - [ ] Focal loss：由于赛题给出的样本不均衡，所以训练样本少的类别的正确率很低。尝试使用Focal loss改进，但是没Train出来。[Focal loss](https://arxiv.org/abs/1708.02002)
 - 结合Transformer的思想(还未尝试)
   - [ ] Temporal : 1D CNN -> Transformer
