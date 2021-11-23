@@ -109,8 +109,8 @@ class Processor:
     def load_model(self):
         Model = import_class(self.arg.model)
         self.model = Model(**self.arg.model_args)
-        # self.loss = nn.CrossEntropyLoss()
-        self.loss = FocalLoss(alpha=loss_alpha)
+        self.loss = paddle.nn.CrossEntropyLoss()
+        # self.loss = FocalLoss(alpha=loss_alpha)
 
         if self.arg.phase == 'test' or self.arg.phase == 'predict':
             if self.arg.weights is None:
