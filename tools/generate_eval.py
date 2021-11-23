@@ -56,6 +56,7 @@ def count_dataset(label, index):
     for i in index:
         count[label[i]] += 1
 
+    inverse_class_freq(count)
     for i, c in enumerate(count):
         print("{}:{}".format(i, c))
 
@@ -146,9 +147,13 @@ def generate_eval_dataset():
 
 
 def partition_train_eval():
+    """
+    partition dataset into train dataset and eval dataset according to K-Fold
+    :return:
+    """
     data, label = load_train_data()
 
-    kf = KFold(n_splits=7, shuffle=True)
+    kf = KFold(n_splits=10, shuffle=True)
     train_index, test_index = next(kf.split(data))
 
     print("train dataset")
@@ -158,6 +163,19 @@ def partition_train_eval():
 
     np.save('train_index.npy', np.array(train_index))
     np.save('test_index.npy', np.array(test_index))
+
+
+def inverse_class_freq(freq):
+    """
+    inverse class frequency for focal loss which needs alpha parameters
+    :param freq:
+    :return:
+    """
+    inverse_freq = [1/i for i in freq]
+    print(inverse_freq)
+    inverse_freq_sum = sum(inverse_freq)
+    inverse_freq = [round(i/inverse_freq_sum, 3) for i in inverse_freq]
+    print(inverse_freq)
 
 
 if __name__ == '__main__':

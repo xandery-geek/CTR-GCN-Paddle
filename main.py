@@ -10,19 +10,23 @@ import yaml
 import random
 import numpy as np
 import paddle
-import paddle.nn as nn
 from tensorboardX import SummaryWriter
 from util.util import import_class
 from util.util import print_color
 import paddle.optimizer as optimizer
 from sklearn.metrics import confusion_matrix
 from feeders.tools import random_rot
+from util.loss import FocalLoss
 
 
 def init_seed(seed):
     # paddle 如何设置random seed
     np.random.seed(seed)
     random.seed(seed)
+
+
+loss_alpha = [0.015, 0.015, 0.015, 0.102, 0.015, 0.015, 0.04, 0.032, 0.015, 0.015, 0.033, 0.015, 0.102, 0.015, 0.098,
+              0.038, 0.022, 0.05, 0.015, 0.025, 0.052, 0.019, 0.015, 0.015, 0.05, 0.072, 0.015, 0.015, 0.035, 0.015]
 
 
 class Processor:
@@ -88,9 +92,9 @@ class Processor:
                 drop_last=True,
                 worker_init_fn=init_seed)
 
-        # if self.arg.phase == 'eval':
-        #     self.arg.test_feeder_args["data_path"] = self.arg.train_feeder_args["data_path"]
-        #     self.arg.test_feeder_args["label_path"] = self.arg.train_feeder_args["label_path"]
+        if self.arg.phase == 'eval':
+            self.arg.test_feeder_args["data_path"] = self.arg.train_feeder_args["data_path"]
+            self.arg.test_feeder_args["label_path"] = self.arg.train_feeder_args["label_path"]
 
         self.arg.test_feeder_args["bone"] = self.arg.bone
         self.arg.test_feeder_args["motion"] = self.arg.motion
@@ -105,8 +109,8 @@ class Processor:
     def load_model(self):
         Model = import_class(self.arg.model)
         self.model = Model(**self.arg.model_args)
-        self.loss = nn.CrossEntropyLoss()
-        # self.loss = paddle.fluid.layers.sigmoid_focal_loss
+        # self.loss = nn.CrossEntropyLoss()
+        self.loss = FocalLoss(alpha=loss_alpha)
 
         if self.arg.phase == 'test' or self.arg.phase == 'predict':
             if self.arg.weights is None:
@@ -293,10 +297,11 @@ class Processor:
                 self.best_acc = accuracy
                 self.best_acc_epoch = epoch + 1
             else:
-                # early stop
-                self.best_timer += 1
-                if self.best_timer > 10:
-                    self.early_stop = True
+                if (epoch + 1) > self.arg.save_epoch:
+                    # early stop
+                    self.best_timer += 1
+                    if self.best_timer > 15:
+                        self.early_stop = True
 
             print_color('Accuracy: {} Models: {}.'.format(accuracy, self.arg.model_saved_name))
             if self.arg.phase == 'eval':

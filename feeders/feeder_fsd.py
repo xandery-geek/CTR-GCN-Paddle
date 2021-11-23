@@ -72,19 +72,20 @@ class Feeder(Dataset):
             npz_label = np.load(self.label_path)
 
             if self.split == "train":
-                train_index_path = 'data/fsd/raw_data/train_index2.npy'
-                print_color(">>> Loading train index from {} <<<".format(train_index_path))
-                train_index = np.load(train_index_path)
+                index_path = 'data/fsd/train_index.npy'
+                print_color(">>> Loading train index from {} <<<".format(index_path))
+                train_index = np.load(index_path)
                 self.data = npz_data[train_index]
                 self.label = npz_label[train_index]
 
             elif self.split == "test":
-                # print_color(">>> Loading test index for evaluation <<<")
-                # test_index = np.load('data/fsd/test_index.npy')
-                # self.data = npz_data[test_index]
-                # self.label = npz_label[test_index]
-                self.data = npz_data
-                self.label = npz_label
+                index_path = 'data/fsd/test_index.npy'
+                print_color(">>> Loading train index from {} <<<".format(index_path))
+                test_index = np.load(index_path)
+                self.data = npz_data[test_index]
+                self.label = npz_label[test_index]
+                # self.data = npz_data
+                # self.label = npz_label
         else:
             print_color(">>> Loading data from {} <<<".format(self.data_path))
             npz_data = np.load(self.data_path)

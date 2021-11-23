@@ -1,12 +1,12 @@
-joint_dir="fsd_joint"
-bone_dir="fsd_bone"
-jmotion_dir="fsd_jmotion"
-bmotion_dir="fsd_bmotion"
+joint_dir="fsd_augm_joint"
+bone_dir="fsd_augm_bone"
+jmotion_dir="fsd_augm_jmotion"
+bmotion_dir="fsd_augm_bmotion"
 
-joint_pdparams="best.pdparams"
-bone_pdparams="best.pdparams"
-jmotion_pdparams="best.pdparams"
-bmotion_pdparams="best.pdparams"
+joint_pdparams="runs-38-17556.pdparams"
+bone_pdparams="runs-37-17094.pdparams"
+jmotion_pdparams="runs-40-3657.pdparams"
+bmotion_pdparams="runs-37-17094.pdparams"
 
 if [ $# == 1 ]; then
   command=$1

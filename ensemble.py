@@ -127,7 +127,8 @@ def predict(arg):
     prediction = []
     if arg.joint_motion_dir is not None and arg.bone_motion_dir is not None:
         print_color("Ensemble with all information")
-        arg.alpha = [0.6, 0.6, 0.4, 0.4]
+        arg.alpha = [0.7, 0.7, 0.3, 0.3]
+        # arg.alpha = [0.6, 0.6, 0.4, 0.4]
         for i in range(len(r1)):
             _, r11 = r1[i]
             _, r22 = r2[i]
