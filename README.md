@@ -1,12 +1,18 @@
 # CTR-GCN-Paddle
-> 该项目面向的任务是基于骨骼点的动作识别，具体针对的是2021 CCF大数据与计算智能大赛（BDCI）- 基于飞桨实现花样滑冰选手骨骼点动作识别赛题。
+> 该项目面向基于骨骼点的动作识别任务，是2021 CCF大数据与计算智能大赛（BDCI）- 基于飞桨实现花样滑冰选手骨骼点动作识别赛题。
+
+## Usage
+```
+python main.py
+```
 
 ## Task
-根据给出的骨骼点数据集，对样本的动作进行分类。
+基于给定的骨骼点数据集，对输入的人物动作进行分类。
 
 骨骼点数据：
-
-![](https://cdn.nlark.com/yuque/0/2021/png/805252/1632471962062-e2f52837-1833-49d2-a398-221fe62a6132.png)
+<div align=center>
+  <image src="https://cdn.nlark.com/yuque/0/2021/png/805252/1632471962062-e2f52837-1833-49d2-a398-221fe62a6132.png" width=200px>  
+</div>
 
 ## Dataset
 比赛给出的数据集：所有视频素材均从2017-2020 年的花样滑冰锦标赛中采集得到。源视频素材中视频的帧率被统一标准化至每秒30 帧，图像大小被统一标准化至1080 * 720 ，以保证数据集的相对一致性。之后通过2D姿态估计算法Open Pose，对视频进行逐帧骨骼点提取，最后以.npy格式保存数据集。
@@ -25,9 +31,9 @@ train data: [N, C, T, V, M]
 - 在BDCI赛题的A榜上排名第8，B榜排名第16（模型的泛化能力不太好，也可能是调的参数还不太行）
 
 ## Model
-模型使用的是 [**CTR-GCN**](https://openaccess.thecvf.com/content/ICCV2021/html/Chen_Channel-Wise_Topology_Refinement_Graph_Convolution_for_Skeleton-Based_Action_Recognition_ICCV_2021_paper.html) 
+模型采用的是 [**CTR-GCN** (ICCV 2021)](https://openaccess.thecvf.com/content/ICCV2021/html/Chen_Channel-Wise_Topology_Refinement_Graph_Convolution_for_Skeleton-Based_Action_Recognition_ICCV_2021_paper.html) 
 
-## Improve
+## Improvement
 - [x] 联合 Multi Stream 数据获得更好的预测结果，参考[Skeleton-Based Action Recognition With Multi-Stream Adaptive Graph Convolutional Networks](https://arxiv.org/abs/1912.06971)
 - ~~CTR-GCN应该使用Transformation之后的结果进行channel-wise topology modeling~~
 - ~~data preprocess: 删除无用的骨骼点~~
@@ -39,3 +45,4 @@ train data: [N, C, T, V, M]
 - 结合Transformer的思想(还未尝试)
   - [ ] Temporal : 1D CNN -> Transformer
   - [ ] Graph Structure: GCN -> Transformer
+  
